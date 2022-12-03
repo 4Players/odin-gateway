@@ -1,0 +1,10 @@
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Certificate files
+*.pem
+
+# Self-contained binaries
+asa
+asa.exe

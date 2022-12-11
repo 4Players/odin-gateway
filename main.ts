@@ -49,7 +49,7 @@ parseArguments(
       help: "The private key file to use for HTTPS",
     },
   })
-    .version("0.10.0")
+    .version("0.11.0")
     .about(
       "Gateway to regulate access to Selective Forwarding Units for 4Players ODIN",
     )

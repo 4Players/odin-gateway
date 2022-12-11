@@ -223,13 +223,18 @@ async function getAuthorization(
       accessKeys: authorizationKeys,
       serverKeys: servers.publicKeys,
       requiredClaims: requirements?.claims ?? [],
+      basicAuthTable: requirements?.basicAuthTable ?? {},
       allowUnknown: config.unknownCustomers !== "forbidden" ||
         authorizationKeys.size === 0,
       allowUnsigned: requirements?.allowUnsigned ?? false,
     });
   } else if (requirements === undefined) {
     return {
-      licensee: { customerId: "null", peerLimit: 0, roomLimit: 0 },
+      licensee: {
+        customerId: "null",
+        peerLimit: Infinity,
+        roomLimit: Infinity,
+      },
       namespace: null,
       claimSet: {},
     };

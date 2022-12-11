@@ -22,6 +22,7 @@ export interface Configuration {
   accessKeys: AccessKeyMap;
   serverKeys: Map<string, Server>;
   requiredClaims: Array<string[] | string>;
+  basicAuthTable: Record<string, string>;
   allowUnknown: boolean;
   allowUnsigned: boolean;
 }
@@ -31,8 +32,42 @@ export async function parseAuthorization(
   configuration: Configuration,
 ): Promise<Authorization> {
   const [type, credentials] = authorization.split(" ", 2);
-  check(type === "Bearer" && credentials, "invalid authorization");
+  check(type && credentials, "missing authorization");
 
+  switch (type) {
+    case "Basic":
+      return parseBasicAuthorization(credentials, configuration);
+    case "Bearer":
+      return await parseBearerAuthorization(credentials, configuration);
+    default:
+      failWith("invalid authorization");
+  }
+}
+
+function parseBasicAuthorization(
+  credentials: string,
+  configuration: Configuration,
+): Authorization {
+  const [user, pw] = atob(credentials).split(":");
+
+  check(
+    Object.prototype.hasOwnProperty.call(configuration.basicAuthTable, user),
+    "invalid credentials",
+  );
+  const expectedPw = configuration.basicAuthTable[user];
+  check(secureCompare(pw, expectedPw), "invalid credentials");
+
+  return {
+    licensee: { customerId: user, peerLimit: Infinity, roomLimit: Infinity },
+    namespace: null,
+    claimSet: {},
+  };
+}
+
+async function parseBearerAuthorization(
+  credentials: string,
+  configuration: Configuration,
+): Promise<Authorization> {
   const { licensee, namespace, claimSet } = await parseToken(
     credentials,
     configuration,
@@ -126,4 +161,17 @@ function selectKey(configuration: Configuration) {
     }
     return { kind: "unknown", publicKey: alwaysPass };
   };
+}
+
+function secureCompare(a: string, b: string): boolean {
+  let mismatch = a.length === b.length ? 0 : 1;
+  if (mismatch) b = a;
+
+  for (let i = 0, len = a.length; i < len; ++i) {
+    const ac = a.charCodeAt(i);
+    const bc = b.charCodeAt(i);
+    mismatch |= ac ^ bc;
+  }
+
+  return mismatch === 0;
 }

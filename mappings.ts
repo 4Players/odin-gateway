@@ -11,6 +11,7 @@ export interface AuthorizationRequirements {
   claims?: (string | string[])[];
   validSubjects?: string[];
   allowUnsigned?: boolean;
+  basicAuthTable?: Record<string, string>;
 }
 
 const internal: [string, Mapping] = ["/internal", {

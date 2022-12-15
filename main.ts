@@ -218,17 +218,7 @@ async function getAuthorization(
   requirements?: AuthorizationRequirements,
 ): Promise<Authorization | null> {
   const header = request.headers.get("authorization");
-  if (header) {
-    return await parseAuthorization(header, {
-      accessKeys: authorizationKeys,
-      serverKeys: servers.publicKeys,
-      requiredClaims: requirements?.claims ?? [],
-      basicAuthTable: requirements?.basicAuthTable ?? {},
-      allowUnknown: config.unknownCustomers !== "forbidden" ||
-        authorizationKeys.size === 0,
-      allowUnsigned: requirements?.allowUnsigned ?? false,
-    });
-  } else if (requirements === undefined) {
+  if (requirements === undefined) {
     return {
       licensee: {
         customerId: "null",
@@ -238,6 +228,16 @@ async function getAuthorization(
       namespace: null,
       claimSet: {},
     };
+  } else if (header) {
+    return await parseAuthorization(header, {
+      accessKeys: authorizationKeys,
+      serverKeys: servers.publicKeys,
+      requiredClaims: requirements?.claims ?? [],
+      basicAuthTable: requirements?.basicAuthTable ?? {},
+      allowUnknown: config.unknownCustomers !== "forbidden" ||
+        authorizationKeys.size === 0,
+      allowUnsigned: requirements?.allowUnsigned ?? false,
+    });
   } else {
     return null;
   }

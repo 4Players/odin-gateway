@@ -1,8 +1,10 @@
 # ODIN Gateway
 
+![v0.12.1](https://img.shields.io/badge/version-0.12.1-blue?style=for-the-badge)
+
 This is a simple gateway server written in Deno. It regulates access by
 spreading ODIN clients over available ODIN servers based on current and future
-usage. It also performs basic checks on customer license conditions (if available).
+usage. It also performs basic checks on customer license conditions.
 
 ```mermaid
 sequenceDiagram

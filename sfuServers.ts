@@ -39,6 +39,7 @@ export interface Room {
   id: RoomId;
   customer: string;
   server: Server;
+  updated: number;
 }
 
 export type Task =
@@ -130,9 +131,10 @@ export async function pickServer(
     const server = randomServer(preference);
     check(server !== undefined, "no server to assign room too");
     room = {
-      id: id,
+      id,
       customer,
       server,
+      updated: Date.now(),
     };
     state.rooms.set(hash, room);
   }
@@ -152,6 +154,7 @@ export function getPublicKey(kid: string): Uint8Array | undefined {
 
 function update() {
   pruneServers();
+  pruneRooms();
   updateWeights();
   updateCustomerUsage();
 }
@@ -175,6 +178,7 @@ function tryAddRoom(
     id,
     customer,
     server,
+    updated: Date.now(),
   });
   return true;
 }
@@ -238,6 +242,16 @@ function pruneServers() {
         hostname,
       });
       server.disabled = true;
+    }
+  }
+}
+
+function pruneRooms() {
+  const now = Date.now();
+  for (const [hash, room] of state.rooms) {
+    const elapsed = (now - room.updated) / 1000;
+    if (elapsed > config.loginToken.lifetime) {
+      state.rooms.delete(hash);
     }
   }
 }
@@ -354,6 +368,15 @@ async function integrateReport(server: Server, report: Report) {
         }
         break;
       case "AB":/* kept room */
+        {
+          const { hash, id, customer } = entry.value;
+          state.rooms.set(hash, {
+            id,
+            customer,
+            server,
+            updated: Date.now(),
+          });
+        }
         break;
       case "B":/* removed room */
         {

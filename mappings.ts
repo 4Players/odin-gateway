@@ -16,6 +16,13 @@ export interface AuthorizationRequirements {
 
 const internal: [string, Mapping] = ["/internal", {
   methods: internalRpcMethods,
+  /*
+  authorization: {
+    basicAuthTable: {
+      "username": "password",
+    },
+  },
+  */
 }];
 
 const external: [string, Mapping] = ["/", {

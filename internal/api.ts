@@ -1,11 +1,53 @@
-import { assert, GentleRpc, toml } from "../deps.ts";
+import { assert, GentleRpc, JsonValue, toml } from "../deps.ts";
 import { extendGridConfig } from "../gridConfigGenerator.ts";
 import { Meta, Parameters } from "../meta.ts";
 import { validate } from "../schema.ts";
 import * as sfuServers from "../sfuServers.ts";
+import { apiCallStats } from "../stats.ts";
 import { deriveAuthorizationKey } from "../jwk.ts";
 
 export const rpcMethods: GentleRpc.Methods = {
+  "Info": function () {
+    const servers: JsonValue = Array.from(sfuServers.state.servers)
+      .map(([hostname, server]) => {
+        return {
+          hostname,
+
+          address: server.address,
+          disabled: server.disabled,
+
+          keyId: server.key.id,
+
+          report: server.lastReport,
+
+          firstSeen: new Date(server.firstSeen).toISOString(),
+          lastSeen: new Date(server.lastSeen).toISOString(),
+
+          tasks: server.tasks.length,
+        };
+      });
+
+    const rooms: JsonValue = Array.from(sfuServers.state.rooms).map(
+      ([hash, room]) => {
+        return {
+          hash,
+          id: room.id,
+          customer: room.customer,
+          server: room.server.address,
+          updated: new Date(room.updated).toISOString(),
+        };
+      },
+    );
+
+    const stats = {
+      apiCalls: Array.from(apiCallStats).map(([name, stats]) => {
+        return { name, ...stats };
+      }),
+    };
+
+    return { servers, rooms, stats };
+  },
+
   "sfu.GridConfig": async function (parameters: Parameters) {
     validate(parameters, "parameters", {
       type: "Object",

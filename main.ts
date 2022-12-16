@@ -19,44 +19,48 @@ import { filterObject } from "./schema.ts";
 import { recordApiCall } from "./stats.ts";
 import { state as servers } from "./sfuServers.ts";
 
+const version = "0.13.0";
+const command = new Clad.Command("asa", {
+  host: {
+    flags: ["h", "host"],
+    takesValue: true,
+    help: "The IP address to listen on",
+  },
+  port: {
+    flags: ["p", "port"],
+    takesValue: true,
+    help: "The TCP port number to listen on",
+  },
+  useSsl: {
+    flags: ["s", "ssl"],
+    help: "Enable secure connections via HTTPS",
+  },
+  certFile: {
+    flags: ["c", "certificate"],
+    takesValue: true,
+    requires: ["useSsl", "keyFile"],
+    help: "The certificate file to use for HTTPS",
+  },
+  keyFile: {
+    flags: ["k", "privatekey"],
+    takesValue: true,
+    requires: ["useSsl", "certFile"],
+    help: "The private key file to use for HTTPS",
+  },
+})
+  .version(version)
+  .about(
+    "Gateway to regulate access to Selective Forwarding Units for 4Players ODIN",
+  );
+
 parseArguments(
   config,
-  new Clad.Command("asa", {
-    host: {
-      flags: ["h", "host"],
-      takesValue: true,
-      help: "The IP address to listen on",
-    },
-    port: {
-      flags: ["p", "port"],
-      takesValue: true,
-      help: "The TCP port number to listen on",
-    },
-    useSsl: {
-      flags: ["s", "ssl"],
-      help: "Enable secure connections via HTTPS",
-    },
-    certFile: {
-      flags: ["c", "certificate"],
-      takesValue: true,
-      requires: ["useSsl", "keyFile"],
-      help: "The certificate file to use for HTTPS",
-    },
-    keyFile: {
-      flags: ["k", "privatekey"],
-      takesValue: true,
-      requires: ["useSsl", "certFile"],
-      help: "The private key file to use for HTTPS",
-    },
-  })
-    .version("0.12.1")
-    .about(
-      "Gateway to regulate access to Selective Forwarding Units for 4Players ODIN",
-    )
-    .parse(Deno.args),
+  command.parse(Deno.args),
 );
 
 await logSetup(config.logLevel, config.logFormat ?? "pretty");
+
+info(`starting gateway version ${version}`);
 
 const headers: Headers = new Headers([
   ["Access-Control-Allow-Origin", "*"],

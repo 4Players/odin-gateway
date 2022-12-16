@@ -1,6 +1,6 @@
 # ODIN Gateway
 
-![v0.12.1](https://img.shields.io/badge/version-0.12.1-blue?style=for-the-badge)
+![v0.13.0](https://img.shields.io/badge/version-0.13.0-blue?style=for-the-badge)
 
 This is a simple gateway server written in Deno. It regulates access by
 spreading ODIN clients over available ODIN servers based on current and future
@@ -40,6 +40,20 @@ The following prerequisites are necessary to start development:
 
 - [Deno](https://deno.land/#installation)
 
+## How to Start
+
+```shell
+# start a HTTP server on port 7000
+deno run --unstable --allow-net --import-map=imports.json main.ts
+
+# start a HTTPS server on port 7000
+deno run --unstable --allow-net --allow-read=. --import-map=imports.json main.ts --ssl
+```
+
+**Note:** If you don't want to install Deno on the target system, you can also
+compile the scripts into a self-containing executable. Click
+[here](https://deno.land/manual/tools/compiler) for details.
+
 ## Configuration
 
 The gateway is configured using a TypeScript configuration file
@@ -58,19 +72,36 @@ specific options:
 **Note:** For local testing, using
 [mkcert](https://github.com/FiloSottile/mkcert) is recommended.
 
-## How to Start
+### Importing Customer Keys
 
-```shell
-# start a HTTP server on port 7000
-deno run --unstable --allow-net --import-map=imports.json main.ts
+Instead of providing a static list of customer keys in the gateway configuration
+file, you can also write your own custom import function, which needs to return
+a `Promise<Customer[]>` value.
 
-# start a HTTPS server on port 7000
-deno run --unstable --allow-net --allow-read=. --import-map=imports.json main.ts --ssl
+```typescript
+customerApi: {
+  updateFunction: myFunction, // async function returning a list of customers
+  updateInterval: 300,        // interval in seconds
+},
 ```
 
-**Note:** If you don't want to install Deno on the target system, you can also
-compile the scripts into a self-containing executable. Click
-[here](https://deno.land/manual/tools/compiler) for details.
+This function can be used to either fetch your customer keys from a RESTful API
+or a reload file on disk. Here's an example:
+
+```typescript
+async function myFunction(): Promise<Customer[]> {
+  try {
+    const response = await fetch("https://domain.tld/api/customer-keys");
+    if (response.status !== 200) {
+      throw "something went wrong";
+    }
+    return await response.json();
+  } catch (_e) {
+    // handle error
+  }
+  return [];
+}
+```
 
 ## Public API
 

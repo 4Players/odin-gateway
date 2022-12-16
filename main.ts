@@ -103,21 +103,35 @@ for (const [url, mapping] of mappings) {
 }
 
 let authorizationKeys: AccessKeyMap = new Map();
-try {
-  const newAuthorizationKeys = asAccessKeyMap(config.customers);
-  if (newAuthorizationKeys.size > 0) {
-    authorizationKeys = newAuthorizationKeys;
-    info(`loaded ${authorizationKeys.size} customer key(s)`);
-  } else {
-    critical(`failed loading any customer key(s)`);
+
+async function updateAuthorizationKeys() {
+  try {
+    const customers = ("customerApi" in config)
+      ? await config.customerApi.updateFunction()
+      : config.customers;
+    const newAuthorizationKeys = asAccessKeyMap(customers);
+    if (newAuthorizationKeys.size > 0) {
+      authorizationKeys = newAuthorizationKeys;
+      info(`loaded ${authorizationKeys.size} customer key(s)`);
+    } else {
+      critical(`failed loading any customer key(s)`);
+    }
+    if (authorizationKeys.size == 0) {
+      warning("activating 'everything goes' fallback");
+    }
+  } catch (err) {
+    error("updating authorization keys failed", {
+      reason: err instanceof Error ? err.message : String(err),
+    });
   }
-  if (authorizationKeys.size == 0) {
-    warning("activating 'everything goes' fallback");
-  }
-} catch (err) {
-  error("updating authorization keys failed", {
-    reason: err instanceof Error ? err.message : String(err),
-  });
+}
+await updateAuthorizationKeys();
+
+if ("customerApi" in config) {
+  setInterval(
+    updateAuthorizationKeys,
+    config.customerApi.updateInterval * 1000,
+  );
 }
 
 if (config.useSsl) {

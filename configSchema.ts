@@ -5,7 +5,9 @@ import { LevelName, LogFormat } from "./log.ts";
 export type Config =
   & CommonConfig
   & NetworkConfig
-  & StaticCustomers;
+  & (StaticCustomers | DynamicCustomers);
+
+type DynamicCustomerFunction = () => Promise<Customer[]>;
 
 interface CommonConfig {
   logLevel: LevelName;
@@ -31,6 +33,13 @@ interface NetworkConfig {
 
 interface StaticCustomers {
   customers: Array<Customer>;
+}
+
+interface DynamicCustomers {
+  customerApi: {
+    updateFunction: DynamicCustomerFunction;
+    updateInterval: number;
+  };
 }
 
 export interface AccessKey {

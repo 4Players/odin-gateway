@@ -23,7 +23,15 @@ const config: Config = {
     keyFile: "privkey.pem",
   },
 
-  /** List of authorized customers and access keys */
+  /** Dynamic list of authorized customers and access keys */
+  /*
+  customerApi: {
+    updateFunction: myFunction,
+    updateInterval: 300, // seconds
+  },
+  */
+
+  /** Static list of authorized customers and access keys */
   customers: [
     {
       id: "foo",

@@ -1,9 +1,9 @@
 import { Colors } from "./deps.ts";
 
-import * as log from "https://deno.land/std@0.167.0/log/mod.ts";
-import type { LogRecord } from "https://deno.land/std@0.167.0/log/logger.ts";
-import { LogLevelNames } from "https://deno.land/std@0.167.0/log/levels.ts";
-import type { LevelName } from "https://deno.land/std@0.167.0/log/levels.ts";
+import * as log from "https://deno.land/std@0.176.0/log/mod.ts";
+import type { LogRecord } from "https://deno.land/std@0.176.0/log/logger.ts";
+import { LogLevelNames } from "https://deno.land/std@0.176.0/log/levels.ts";
+import type { LevelName } from "https://deno.land/std@0.176.0/log/levels.ts";
 import { RoomId } from "./sfuServers.ts";
 
 export { LogLevelNames };

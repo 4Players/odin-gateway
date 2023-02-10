@@ -3,7 +3,10 @@ import { Base64, Base64Url, check, JsonValue } from "./deps.ts";
 import { deriveAuthorizationKey } from "./jwk.ts";
 import { info, warning } from "./log.ts";
 
-export type RoomId = [string, string];
+export type RoomId = [
+  string, /* namespace */
+  string, /* rid */
+];
 
 declare const RoomHashSymbol: unique symbol;
 export type RoomHash = string & { readonly [RoomHashSymbol]: never };
@@ -359,7 +362,7 @@ async function integrateReport(server: Server, report: Report) {
     const entry of intersect(rooms, server.rooms, (a) => a.hash, (b) => b.hash)
   ) {
     switch (entry.group) {
-      case "A":/* new room */
+      case "A": /* new room */
         {
           const { hash, id, customer } = entry.value;
           if (!tryAddRoom(server, hash, id, customer, "report")) {
@@ -367,7 +370,7 @@ async function integrateReport(server: Server, report: Report) {
           }
         }
         break;
-      case "AB":/* kept room */
+      case "AB": /* kept room */
         {
           const { hash, id, customer } = entry.value;
           state.rooms.set(hash, {
@@ -378,7 +381,7 @@ async function integrateReport(server: Server, report: Report) {
           });
         }
         break;
-      case "B":/* removed room */
+      case "B": /* removed room */
         {
           const { hash } = entry.value;
           removeRoom(server, hash, "report");

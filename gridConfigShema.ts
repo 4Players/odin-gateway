@@ -57,7 +57,6 @@ interface QuicConfig {
   certificate_file?: string;
   privatekey_file?: string;
   keep_alive_interval?: number;
-  max_parallel_connects?: number;
   connect_timeout?: number;
   idle_timeout?: number;
   no_peers_timeout?: number;
@@ -71,11 +70,8 @@ interface HttpConfig {
   privatekey_file?: string;
   timeout?: number;
   ping_interval?: number;
+  webrtc_binding?: string;
   webrtc_candidates?: Array<string>;
-  webrtc_ports?: {
-    begin: number;
-    end: number;
-  };
 }
 
 interface MetricsConfig {

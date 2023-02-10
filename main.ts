@@ -19,7 +19,7 @@ import { filterObject } from "./schema.ts";
 import { recordApiCall } from "./stats.ts";
 import { state as servers } from "./sfuServers.ts";
 
-const version = "0.13.0";
+const version = "0.13.1";
 const command = new Clad.Command("asa", {
   host: {
     flags: ["h", "host"],

@@ -47,6 +47,11 @@ const command = new Clad.Command("asa", {
     requires: ["useSsl", "certFile"],
     help: "The private key file to use for HTTPS",
   },
+  masterKey: {
+    flags: ["m", "masterkey"],
+    takesValue: true,
+    help: "The master key to use for authorization",
+  },
 })
   .version(version)
   .about(
@@ -281,6 +286,10 @@ function parseArguments(config: Config, args: Clad.ArgMatches) {
     config.useSsl = !!args.bool.useSsl;
     config.https.certFile = args.str.certFile ?? config.https.certFile;
     config.https.keyFile = args.str.keyFile ?? config.https.keyFile;
+  }
+
+  if (args.str.masterKey) {
+    config.masterKey = args.str.masterKey;
   }
 
   if (args.str.host) {

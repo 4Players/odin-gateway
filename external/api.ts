@@ -54,7 +54,7 @@ export const rpcMethods: GentleRpc.Methods = {
       rid,
       nsp: roomId[0],
       adr: server.address,
-      sub: "login",
+      sub: "connect",
       aud: "sfu",
       exp: nbf + config.loginToken.lifetime,
       nbf,

@@ -1,6 +1,6 @@
 # ODIN Gateway
 
-![v0.13.1](https://img.shields.io/badge/version-0.13.1-blue?style=for-the-badge)
+![v0.13.2](https://img.shields.io/badge/version-0.13.2-blue?style=for-the-badge)
 
 This is a simple gateway server written in Deno. It regulates access by
 spreading ODIN clients over available ODIN servers based on current and future

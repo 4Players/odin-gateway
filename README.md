@@ -180,7 +180,7 @@ byte array.
 
 ```shell
 curl --request POST \
-  --url https://ocalhost:7000/ \
+  --url https://localhost:7000/ \
   --header 'Authorization: Bearer ${JWT}' \
   --header 'Content-Type: application/json' \
   --data '{

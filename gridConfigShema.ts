@@ -6,11 +6,12 @@ export type GridConfig =
   & TelemetryConfig;
 
 interface CommonConfig {
-  verbosity?: number;
   public_address?: string;
+  log?: LogConfig;
   supervisor?: SupervisorConfig;
   authorization?: AuthorizationConfig;
   limit?: LimitConfig;
+  http_client?: HttpClientConfig;
   internal?: InternalConfig;
 }
 
@@ -23,7 +24,6 @@ interface NetworkConfig {
 interface SupervisorConfig {
   report_interval?: number;
   no_warmup?: boolean;
-  version?: string;
 }
 
 interface AuthorizationConfig {
@@ -32,22 +32,30 @@ interface AuthorizationConfig {
   leeway?: number;
 }
 
+interface LogConfig {
+  verbosity?: number;
+  filters?: Array<string>;
+  terminal?: {
+    format?: "json" | "text";
+    colors?: boolean;
+  };
+  loki?: {
+    url?: string;
+    labels?: Record<string, string>;
+  };
+}
+
 interface LimitConfig {
   max_clients?: number;
   max_rooms?: number;
   max_peers?: number;
-  network?: {
-    incoming_media_packets?: {
-      rate: number;
-      capacity: number;
-    };
-  };
   peer?: {
     medias?: number;
+    concurrent_streams?: number;
     incoming_messages?: {
-      rate: number;
-      capacity: number;
-      overflow: number;
+      rate?: number;
+      capacity?: number;
+      overflow?: number;
     };
   };
 }
@@ -70,6 +78,7 @@ interface HttpConfig {
   privatekey_file?: string;
   timeout?: number;
   ping_interval?: number;
+  no_peers_timeout?: number;
   webrtc_binding?: string;
   webrtc_candidates?: Array<string>;
 }
@@ -78,7 +87,7 @@ interface MetricsConfig {
   binding?: string;
   allowed?: Array<string>;
   idle_timeout?: number;
-  global_labels?: { deployment: string };
+  global_labels?: Record<string, string>;
 }
 
 interface TelemetryConfig {
@@ -95,6 +104,12 @@ interface TelemetryConfig {
   };
 }
 
+interface HttpClientConfig {
+  proxy?: string;
+  accept_invalid_certificates?: boolean;
+}
+
 interface InternalConfig {
   log_hanging_api_calls?: number;
+  log_rejected_api_calls?: boolean;
 }

@@ -148,12 +148,12 @@ export async function report(
 export async function pickServer(
   id: RoomId,
   customer: string,
-  preference?: string,
+  forcedServer?: string,
 ): Promise<Server> {
   const hash = await hashRoomId(id);
   let room = state.rooms.get(hash);
   if (room === undefined || room.server.disabled) {
-    const server = randomServer(preference);
+    const server = randomServer(forcedServer);
     check(server !== undefined, "no server to assign room too");
     room = {
       id,
@@ -281,17 +281,18 @@ function pruneRooms() {
   }
 }
 
-function randomServer(preference?: string): Server | undefined {
-  if (preference != undefined) {
-    const server = state.servers.get(preference);
-    if (server != undefined && server.disabled === false) {
+function randomServer(forcedServer?: string): Server | undefined {
+  if (forcedServer != undefined) {
+    const server = state.servers.get(forcedServer);
+    if (server?.disabled === false) {
       return server;
     }
+  } else if (state.weightedServers.length !== 0) {
+    const max = state.weightedServers[state.weightedServers.length - 1].value;
+    const target = Math.random() * max;
+    return binarySearch(target, state.weightedServers)?.server;
   }
-  if (state.weightedServers.length === 0) return undefined;
-  const max = state.weightedServers[state.weightedServers.length - 1].value;
-  const target = Math.random() * max;
-  return binarySearch(target, state.weightedServers)?.server;
+  return undefined;
 }
 
 async function getServer(hostname: string, version: string): Promise<Server> {

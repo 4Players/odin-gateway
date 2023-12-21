@@ -23,7 +23,7 @@ export const rpcMethods: GentleRpc.Methods = {
     });
     validate(parameters.meta.claimSet, "claims", TokenSchema);
 
-    const { licensee, claimSet: { uid, rid } } = parameters.meta;
+    const { licensee, claimSet: { uid, rid, internal } } = parameters.meta;
     const cid = licensee.customerId;
 
     if (licensee.peerLimit !== Infinity || licensee.roomLimit !== Infinity) {
@@ -44,7 +44,7 @@ export const rpcMethods: GentleRpc.Methods = {
     const server = await sfuServers.pickServer(
       roomId,
       cid,
-      parameters.preferred_server,
+      internal?.server,
     );
 
     const nbf = Math.floor(Date.now() / 1000) /* now in unix-time */;

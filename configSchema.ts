@@ -12,6 +12,10 @@ type DynamicCustomerFunction = () => Promise<Customer[]>;
 interface CommonConfig {
   logLevel: LevelName;
   logFormat?: LogFormat;
+  sfuPools?: {
+    available: string[];
+    default: string;
+  };
   sfuConfig: {
     metricsServer: string;
     updateInterval: number;

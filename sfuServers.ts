@@ -17,25 +17,46 @@ export interface Duration {
 }
 
 export interface Server {
+  /**
+   * FQDN and port number where the server can be reached from the Internet
+   */
   address: string;
   /**
-   * Disabled servers, are considered dead, all it's rooms should be migrated to other servers
+   * Version of the server
+   */
+  version: string;
+  /**
+   * State of the server (disabled servers are considered dead; all rooms should be migrated to other servers)
    */
   disabled: boolean;
+  /**
+   * Rooms hosted on this server
+   */
   rooms: Array<{ hash: RoomHash } & RoomReport>;
-
+  /**
+   * Last report sent by the server including rooms, number of clients connected and usage information
+   */
+  lastReport: Report;
+  /**
+   * UTC timestamp when the server was first seen
+   */
+  firstSeen: number;
+  /**
+   * UTC timestamp when the server was last seen
+   */
+  lastSeen: number;
+  /**
+   * Management API tasks for the server to be executed
+   */
+  tasks: Task[];
+  /**
+   * Ed25519 keypair for server communication and identification
+   */
   key: {
     id: string;
     public: Uint8Array;
     private: Uint8Array;
   };
-
-  lastReport: Report;
-
-  firstSeen: number;
-  lastSeen: number;
-
-  tasks: Task[];
 }
 
 export interface Room {
@@ -108,9 +129,10 @@ export interface RoomReport {
 
 export async function report(
   hostname: string,
+  version: string,
   report: Report,
 ): Promise<Task[]> {
-  const server = await getServer(hostname);
+  const server = await getServer(hostname, version);
   await integrateReport(server, report);
 
   if (server.disabled) {
@@ -272,15 +294,17 @@ function randomServer(preference?: string): Server | undefined {
   return binarySearch(target, state.weightedServers)?.server;
 }
 
-async function getServer(hostname: string): Promise<Server> {
+async function getServer(hostname: string, version: string): Promise<Server> {
   let server = state.servers.get(hostname);
   if (server === undefined) {
-    server = await newServer(hostname);
+    server = await newServer(hostname, version);
+  } else {
+    server.version = version;
   }
   return server;
 }
 
-async function newServer(hostname: string): Promise<Server> {
+async function newServer(hostname: string, version: string): Promise<Server> {
   info("added sfu server", { hostname });
   const jwk = await deriveAuthorizationKey(hostname);
   const key = {
@@ -293,6 +317,7 @@ async function newServer(hostname: string): Promise<Server> {
   if (server === undefined) {
     server = {
       address: `${hostname}`,
+      version: version,
       rooms: [],
       disabled: false,
       key,

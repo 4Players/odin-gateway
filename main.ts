@@ -111,6 +111,23 @@ for (const [url, mapping] of mappings) {
   );
 }
 
+if (config.sfuPools) {
+  if (config.sfuPools.available.indexOf(config.sfuPools.default) < 0) {
+    error(`"${config.sfuPools.default}" not found in configured pool list`);
+  }
+  for (const pool of config.sfuPools.available) {
+    for (const [url, mapping] of mappings) {
+      if (mapping.pool) continue;
+      mappings.set(`/${pool}${url}`, {
+        methods: mapping.methods,
+        ...(mapping.authorization &&
+          { authorization: mapping.authorization }),
+        pool,
+      });
+    }
+  }
+}
+
 let authorizationKeys: AccessKeyMap = new Map();
 
 async function updateAuthorizationKeys() {
@@ -215,6 +232,7 @@ async function handle(request: Request, connInfo: HttpServer.ConnInfo) {
     additionalArguments: [{
       args: {
         meta: collectMeta(request, connInfo, authorization),
+        pool: getSfuPool(mapping.pool),
       },
       allMethods: true,
     }],
@@ -264,6 +282,14 @@ async function getAuthorization(
   } else {
     return null;
   }
+}
+
+function getSfuPool(pool?: string): string {
+  if (!config.sfuPools || config.sfuPools.default === pool || !pool) {
+    return "";
+  }
+
+  return pool;
 }
 
 function filterMethods(

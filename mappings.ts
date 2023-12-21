@@ -5,6 +5,7 @@ import { GentleRpc } from "./deps.ts";
 export interface Mapping {
   methods: GentleRpc.Methods;
   authorization?: AuthorizationRequirements;
+  pool?: string;
 }
 
 export interface AuthorizationRequirements {

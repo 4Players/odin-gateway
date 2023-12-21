@@ -15,4 +15,8 @@ export interface WithMeta {
   meta: Meta;
 }
 
-export type Parameters = Record<string, unknown> & WithMeta;
+export interface WithPool {
+  pool: string;
+}
+
+export type Parameters = Record<string, unknown> & WithMeta & WithPool;

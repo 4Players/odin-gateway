@@ -44,10 +44,10 @@ The following prerequisites are necessary to start development:
 
 ```shell
 # start a HTTP server on port 7000
-deno run --unstable --allow-net --import-map=imports.json main.ts
+deno task run
 
 # start a HTTPS server on port 7000
-deno run --unstable --allow-net --allow-read=. --import-map=imports.json main.ts --ssl
+deno task run --ssl
 ```
 
 **Note:** If you don't want to install Deno on the target system, you can also

@@ -1,6 +1,9 @@
 import config from "./config.ts";
 import { Customer } from "./configSchema.ts";
-import { assert, Base64, Base64Url, Ed25519 } from "./deps.ts";
+import * as Base64 from "std/encoding/base64.ts";
+import * as Base64Url from "std/encoding/base64url.ts";
+import { assert } from "std/testing/asserts.ts";
+import { getPublicKey } from "ed25519";
 import { warning } from "./log.ts";
 
 export type JWK = OKP;
@@ -88,7 +91,7 @@ export async function deriveAuthorizationKey(
       ),
     ),
   );
-  const publicKey = await Ed25519.getPublicKey(privateKey);
+  const publicKey = await getPublicKey(privateKey);
   return {
     kid: await getKeyId(publicKey),
     kty: "OKP",

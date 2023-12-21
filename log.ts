@@ -1,9 +1,15 @@
-import { Colors } from "./deps.ts";
-
-import * as log from "https://deno.land/std@0.176.0/log/mod.ts";
-import type { LogRecord } from "https://deno.land/std@0.176.0/log/logger.ts";
-import { LogLevelNames } from "https://deno.land/std@0.176.0/log/levels.ts";
-import type { LevelName } from "https://deno.land/std@0.176.0/log/levels.ts";
+import * as Colors from "std/fmt/colors.ts";
+import {
+  critical,
+  debug,
+  error,
+  info,
+  setup as _setup,
+  warning,
+} from "std/log/mod.ts";
+import { ConsoleHandler } from "std/log/handlers.ts";
+import { LogRecord } from "std/log/logger.ts";
+import { LevelName, LogLevelNames } from "std/log/levels.ts";
 import { RoomId } from "./sfuServers.ts";
 
 export { LogLevelNames };
@@ -25,25 +31,7 @@ export type LogArgs = Record<
   (string | number | boolean | RoomId | null)
 >;
 
-export function debug(msg: string, args?: LogArgs) {
-  log.debug(msg, args);
-}
-
-export function info(msg: string, args?: LogArgs) {
-  log.info(msg, args);
-}
-
-export function warning(msg: string, args?: LogArgs) {
-  log.warning(msg, args);
-}
-
-export function error(msg: string, args?: LogArgs) {
-  log.error(msg, args);
-}
-
-export function critical(msg: string, args?: LogArgs) {
-  log.critical(msg, args);
-}
+export { critical, debug, error, info, warning };
 
 const messageColors: { [Level in LevelName]: ((_: string) => string) } = {
   NOTSET: Colors.reset,
@@ -56,9 +44,9 @@ const messageColors: { [Level in LevelName]: ((_: string) => string) } = {
 
 export type LogFormat = "pretty" | "json";
 
-export async function setup(level: LevelName, type: LogFormat) {
+export function setup(level: LevelName, type: LogFormat) {
   const Handler = type == "pretty" ? PrettyHandler : JsonHandler;
-  await log.setup({
+  _setup({
     handlers: {
       default: new Handler(level),
     },
@@ -71,7 +59,7 @@ export async function setup(level: LevelName, type: LogFormat) {
   });
 }
 
-class PrettyHandler extends log.handlers.ConsoleHandler {
+class PrettyHandler extends ConsoleHandler {
   format(logRecord: LogRecord): string {
     const level = logRecord.levelName as LevelName;
     const time = relativeTime(logRecord.datetime);
@@ -81,7 +69,7 @@ class PrettyHandler extends log.handlers.ConsoleHandler {
   }
 }
 
-class JsonHandler extends log.handlers.ConsoleHandler {
+class JsonHandler extends ConsoleHandler {
   format(logRecord: LogRecord): string {
     const severity = logRecord.levelName;
     const ts = logRecord.datetime.toISOString();

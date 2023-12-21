@@ -1,9 +1,9 @@
 import { rpcMethods as internalRpcMethods } from "./internal/api.ts";
 import { rpcMethods as externalRpcMethods } from "./external/api.ts";
-import { GentleRpc } from "./deps.ts";
+import { Methods } from "gentle_rpc";
 
 export interface Mapping {
-  methods: GentleRpc.Methods;
+  methods: Methods;
   authorization?: AuthorizationRequirements;
   pool?: string;
 }

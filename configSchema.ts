@@ -1,4 +1,4 @@
-import { HttpServer } from "./deps.ts";
+import { ServeInit, ServeTlsInit } from "std/http/server.ts";
 import { JWK } from "./jwk.ts";
 import { LevelName, LogFormat } from "./log.ts";
 
@@ -31,8 +31,8 @@ interface CommonConfig {
 
 interface NetworkConfig {
   useSsl: boolean;
-  http: HttpServer.ServeInit;
-  https: HttpServer.ServeTlsInit;
+  http: ServeInit;
+  https: ServeTlsInit;
 }
 
 interface StaticCustomers {

@@ -1,5 +1,7 @@
 import config from "./config.ts";
-import { Base64, Base64Url, check, JsonValue } from "./deps.ts";
+import * as Base64 from "std/encoding/base64.ts";
+import * as Base64Url from "std/encoding/base64url.ts";
+import { check, JsonValue } from "./utils.ts";
 import { deriveAuthorizationKey } from "./jwk.ts";
 import { info, warning } from "./log.ts";
 

@@ -1,27 +1,17 @@
 import config from "../config.ts";
-import { check, failWith, GentleRpc } from "../deps.ts";
+import { check, failWith } from "../utils.ts";
+import { Methods } from "gentle_rpc";
 import { createJwt } from "../jwt.ts";
 import { Meta, Parameters } from "../meta.ts";
-import { create, maybe, validate } from "../schema.ts";
+import { BytesSchema, validate } from "../schema.ts";
 import * as sfuServers from "../sfuServers.ts";
+import * as z from "zod";
+import { TokenClaimsSchema } from "odin-common";
 
-const TokenSchema = create({
-  type: "Object",
-  fields: {
-    uid: { type: "String" },
-    rid: { type: "String", array: maybe },
-  },
-});
-
-export const rpcMethods: GentleRpc.Methods = {
+export const rpcMethods: Methods = {
   "Connect": async (parameters: Parameters) => {
-    validate(parameters, "parameters", {
-      type: "Object",
-      fields: {
-        preferred_server: { type: "String", optional: true },
-      },
-    });
-    validate(parameters.meta.claimSet, "claims", TokenSchema);
+    validate(parameters, z.object({}));
+    validate(parameters.meta.claimSet, TokenClaimsSchema);
 
     const { licensee, claimSet: { uid, rid, internal } } = parameters.meta;
     const cid = licensee.customerId;
@@ -69,13 +59,13 @@ export const rpcMethods: GentleRpc.Methods = {
   },
 
   "RoomClose": async function (parameters: Parameters) {
-    validate(parameters, "parameters", {
-      type: "Object",
-      fields: {
-        room_id: { type: "String" },
-        ban_time: { type: "Number", optional: true },
-      },
-    });
+    validate(
+      parameters,
+      z.object({
+        room_id: z.string(),
+        ban_time: z.number().optional(),
+      }),
+    );
 
     const roomId = findParamRoomId(parameters.meta, parameters.room_id);
     const server = await sfuServers.getServerByRoom(roomId);
@@ -93,13 +83,13 @@ export const rpcMethods: GentleRpc.Methods = {
   },
 
   "RoomUpdate": async function (parameters: Parameters) {
-    validate(parameters, "parameters", {
-      type: "Object",
-      fields: {
-        room_id: { type: "String" },
-        user_data: { type: "Bytes" },
-      },
-    });
+    validate(
+      parameters,
+      z.object({
+        room_id: z.string(),
+        user_data: BytesSchema,
+      }),
+    );
 
     const roomId = findParamRoomId(parameters.meta, parameters.room_id);
     const server = await sfuServers.getServerByRoom(roomId);
@@ -114,14 +104,14 @@ export const rpcMethods: GentleRpc.Methods = {
   },
 
   "RoomBanClient": async function (parameters: Parameters) {
-    validate(parameters, "parameters", {
-      type: "Object",
-      fields: {
-        room_id: { type: "String" },
-        user_id: { type: "String" },
-        ban_time: { type: "Number", optional: true },
-      },
-    });
+    validate(
+      parameters,
+      z.object({
+        room_id: z.string(),
+        user_id: z.string(),
+        ban_time: z.number().optional(),
+      }),
+    );
 
     const roomId = findParamRoomId(parameters.meta, parameters.room_id);
     const server = await sfuServers.getServerByRoom(roomId);
@@ -140,14 +130,14 @@ export const rpcMethods: GentleRpc.Methods = {
   },
 
   "RoomSendMessage": async function (parameters: Parameters) {
-    validate(parameters, "parameters", {
-      type: "Object",
-      fields: {
-        room_id: { type: "String" },
-        user_id: { type: "String" },
-        message: { type: "Bytes" },
-      },
-    });
+    validate(
+      parameters,
+      z.object({
+        room_id: z.string(),
+        user_id: z.string(),
+        message: BytesSchema,
+      }),
+    );
 
     const roomId = findParamRoomId(parameters.meta, parameters.room_id);
     const server = await sfuServers.getServerByRoom(roomId);
@@ -184,7 +174,7 @@ async function findFirstRoomId(
 }
 
 function findParamRoomId(meta: Meta, roomId: string): sfuServers.RoomId {
-  validate(meta.claimSet, "claims", TokenSchema);
+  validate(meta.claimSet, TokenClaimsSchema);
 
   const { licensee, claimSet: { rid } } = meta;
   const cid = licensee.customerId;

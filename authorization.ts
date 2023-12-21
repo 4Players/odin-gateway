@@ -1,5 +1,5 @@
 import config from "./config.ts";
-import { check, failWith } from "./deps.ts";
+import { check, failWith } from "./utils.ts";
 import { AccessKeyMap, Licensee } from "./jwk.ts";
 import {
   AlwaysPass,

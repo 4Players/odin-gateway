@@ -1,7 +1,9 @@
 import config from "./config.ts";
 import { AuthorizationRequirements, mappings } from "./mappings.ts";
 import { Authorization, parseAuthorization } from "./authorization.ts";
-import { Clad, GentleRpc, HttpServer } from "./deps.ts";
+import { ArgMatches, Command } from "clad";
+import { CustomError, Methods, respond } from "gentle_rpc";
+import { ConnInfo, serve, serveTls } from "std/http/server.ts";
 import { Config } from "./configSchema.ts";
 import { AccessKeyMap, asAccessKeyMap } from "./jwk.ts";
 import { ClaimSet } from "./jwt.ts";
@@ -15,12 +17,12 @@ import {
   warning,
 } from "./log.ts";
 import { Meta, WithMeta } from "./meta.ts";
-import { filterObject } from "./schema.ts";
+import { filterObject } from "./utils.ts";
 import { recordApiCall } from "./stats.ts";
 import { state as servers } from "./sfuServers.ts";
 
-const version = "0.13.2";
-const command = new Clad.Command("asa", {
+const version = "0.18.0";
+const command = new Command("asa", {
   host: {
     flags: ["h", "host"],
     takesValue: true,
@@ -93,7 +95,7 @@ for (const [url, mapping] of mappings) {
           recordApiCall(name, "success");
           return result;
         } catch (err) {
-          if (err instanceof GentleRpc.CustomError) {
+          if (err instanceof CustomError) {
             recordApiCall(name, "rejected");
           } else {
             recordApiCall(name, "failure");
@@ -161,9 +163,9 @@ if ("customerApi" in config) {
 }
 
 if (config.useSsl) {
-  await HttpServer.serveTls(httpHandler, { onListen, ...config.https });
+  await serveTls(httpHandler, { onListen, ...config.https });
 } else {
-  await HttpServer.serve(httpHandler, { onListen, ...config.http });
+  await serve(httpHandler, { onListen, ...config.http });
 }
 
 function onListen(params: { hostname: string; port: number }) {
@@ -173,7 +175,7 @@ function onListen(params: { hostname: string; port: number }) {
 
 async function httpHandler(
   request: Request,
-  connInfo: HttpServer.ConnInfo,
+  connInfo: ConnInfo,
 ): Promise<Response> {
   try {
     return await handle(request, connInfo);
@@ -196,7 +198,7 @@ async function httpHandler(
   }
 }
 
-async function handle(request: Request, connInfo: HttpServer.ConnInfo) {
+async function handle(request: Request, connInfo: ConnInfo) {
   const url = new URL(request.url);
   const mapping = mappings.get(url.pathname);
   if (!mapping) {
@@ -226,7 +228,7 @@ async function handle(request: Request, connInfo: HttpServer.ConnInfo) {
     });
   }
 
-  return await GentleRpc.respond(methods, request, {
+  return await respond(methods, request, {
     publicErrorStack: false,
     proto: "http",
     additionalArguments: [{
@@ -293,9 +295,9 @@ function getSfuPool(pool?: string): string {
 }
 
 function filterMethods(
-  methods: GentleRpc.Methods,
+  methods: Methods,
   claimSet: ClaimSet,
-): GentleRpc.Methods {
+): Methods {
   const { sub } = claimSet;
   if (sub === undefined) return methods;
   const subs = (Array.isArray(sub) ? sub : [sub]).map((sub) =>
@@ -307,7 +309,7 @@ function filterMethods(
   );
 }
 
-function parseArguments(config: Config, args: Clad.ArgMatches) {
+function parseArguments(config: Config, args: ArgMatches) {
   if (args.bool.useSsl) {
     config.useSsl = !!args.bool.useSsl;
     config.https.certFile = args.str.certFile ?? config.https.certFile;
@@ -347,7 +349,7 @@ function response(
 
 function collectMeta(
   request: Request,
-  connInfo: HttpServer.ConnInfo,
+  connInfo: ConnInfo,
   authorization: Authorization,
 ): Meta {
   const remoteAddress = connInfo.remoteAddr;

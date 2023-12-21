@@ -1,4 +1,6 @@
-import { Base64Url, check, Ed25519, failWith, JsonValue } from "./deps.ts";
+import * as Base64Url from "std/encoding/base64url.ts";
+import { sign, verify } from "ed25519";
+import { check, failWith, JsonValue } from "./utils.ts";
 
 export type ClaimSet = Record<string, JsonValue>;
 
@@ -44,7 +46,7 @@ export async function parseJwt<
           const encoder = new TextEncoder();
           const bytes = encoder.encode(`${headerText}.${claimSetText}`);
           const signature = Base64Url.decode(signatureText);
-          const isValid = await Ed25519.verify(signature, bytes, key.publicKey);
+          const isValid = await verify(signature, bytes, key.publicKey);
           check(isValid, "invalid signature in token");
         }
       }
@@ -67,7 +69,7 @@ export async function createJwt(
 ): Promise<string> {
   const header = { "alg": "EdDSA", kid };
   const body = `${encodeObject(header)}.${encodeObject(claimSet)}`;
-  const signature = await Ed25519.sign(
+  const signature = await sign(
     new TextEncoder().encode(body),
     privateKey,
   );

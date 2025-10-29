@@ -3,8 +3,10 @@
 ![v0.18.0](https://img.shields.io/badge/version-0.18.0-blue?style=for-the-badge)
 
 This is a simple gateway server written in Deno. It regulates access by
-spreading ODIN clients over available ODIN servers based on current and future
-usage. It also performs basic checks on customer license conditions.
+spreading ODIN Voice clients over available ODIN Voice servers based on current and future
+usage. It also performs basic checks on customer license conditions. 
+
+[ODIN Voice](https://odin.4players.io/voice-chat/) is a full-service voice chat solution by [4Players GmbH](https://www.4players.io/company/about_us/). Check out our [full online documentation](https://docs.4players.io/voice/)!
 
 ```mermaid
 sequenceDiagram
